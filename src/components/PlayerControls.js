@@ -50,23 +50,10 @@ const PlayerControls = ({
             console.log('PlayerControls - Attempting to load audio with URL:', currentEpisode.audioUrl.substring(0, 50) + '...');
 
             const audio = audioRef.current;
-            
-            // Create the full URL to compare properly
-            const currentAudioUrl = currentEpisode.audioUrl;
-            const loadedAudioUrl = audio.src;
-            
-            console.log('PlayerControls - Current audio URL:', currentAudioUrl.substring(0, 100));
-            console.log('PlayerControls - Loaded audio URL:', loadedAudioUrl.substring(0, 100));
-            
-            // Check if we need to load a different episode
-            if (!loadedAudioUrl.includes(currentAudioUrl) && !currentAudioUrl.includes(loadedAudioUrl)) {
+
+            // Only reset if it's a different episode (different URL)
+            if (audio.src !== currentEpisode.audioUrl) {
                 console.log('PlayerControls - Loading new episode, resetting time');
-                
-                // Pause current audio first
-                if (!audio.paused) {
-                    audio.pause();
-                }
-                
                 setCurrentTime(0);
                 setIsAudioLoaded(false);
                 audio.src = currentEpisode.audioUrl;
@@ -123,39 +110,29 @@ const PlayerControls = ({
                 audio.removeEventListener('error', handleError);
             };
         } else {
-            console.warn('PlayerControls - No audio URL available for episode:', currentEpisode);
-            setIsAudioLoaded(false);
-            
-            // Clear audio source if no URL is available
-            if (audioRef.current) {
-                audioRef.current.src = '';
+            // Handle case where episode exists but no audio URL (regenerating or failed)
+            if (currentEpisode && currentEpisode.hadAudio && !currentEpisode.audioUrl) {
+                console.log('PlayerControls - Episode marked as having audio but no URL - likely regenerating');
+                setIsAudioLoaded(false);
+                
+                // Clear the audio source to prevent "Empty src attribute" error
+                if (audioRef.current && audioRef.current.src) {
+                    console.log('PlayerControls - Clearing audio src to prevent errors');
+                    audioRef.current.removeAttribute('src');
+                    // Don't call load() as it will trigger the "Empty src attribute" error
+                }
+            } else {
+                console.warn('PlayerControls - No audio URL available for episode:', currentEpisode);
+                setIsAudioLoaded(false);
+                
+                // Clear the audio source
+                if (audioRef.current && audioRef.current.src) {
+                    audioRef.current.removeAttribute('src');
+                    // Don't call load() as it will trigger the "Empty src attribute" error
+                }
             }
         }
-    }, [currentEpisode?.audioUrl, currentEpisodeIndex]);
-
-    // Force reload when episode index changes
-    useEffect(() => {
-        console.log('PlayerControls - Episode index changed to:', currentEpisodeIndex);
-        if (audioRef.current && currentEpisode?.audioUrl) {
-            const audio = audioRef.current;
-            
-            // Force reload the new episode
-            console.log('PlayerControls - Forcing episode switch to episode', currentEpisodeIndex + 1);
-            
-            // Pause and reset current audio
-            if (!audio.paused) {
-                audio.pause();
-            }
-            
-            // Reset states for new episode
-            setCurrentTime(0);
-            setIsAudioLoaded(false);
-            
-            // Set new source
-            audio.src = currentEpisode.audioUrl;
-            audio.load();
-        }
-    }, [currentEpisodeIndex]);
+    }, [currentEpisode?.audioUrl, currentEpisodeIndex, isPlaying, onPlayPause]);
 
     // Handle play/pause - simplified to work like EpisodeCard
     useEffect(() => {
@@ -164,10 +141,11 @@ const PlayerControls = ({
             console.log('PlayerControls - Audio state change:', isPlaying ? 'Should Play' : 'Should Pause');
             console.log('PlayerControls - Audio readyState:', audio.readyState);
             console.log('PlayerControls - Audio current time:', audio.currentTime);
+            console.log('PlayerControls - Audio src:', audio.src ? 'Available' : 'Empty');
 
             if (isPlaying) {
-                // Try to play regardless of readyState if we have audio loaded
-                if (isAudioLoaded || audio.readyState >= 2) {
+                // Only try to play if we have a valid audio source
+                if (audio.src && (isAudioLoaded || audio.readyState >= 2)) {
                     console.log('PlayerControls - Starting playback from time:', audio.currentTime);
                     const playPromise = audio.play();
 
@@ -179,6 +157,8 @@ const PlayerControls = ({
                             // Don't toggle the play state here - let the user try again
                         });
                     }
+                } else if (!audio.src) {
+                    console.log('PlayerControls - No audio source available - audio may be regenerating');
                 } else {
                     console.log('PlayerControls - Audio not ready, will try to play after loading');
                 }
@@ -234,14 +214,17 @@ const PlayerControls = ({
 
     // Handle errors with audio playback
     const handleError = () => {
+        // Ignore "Empty src attribute" errors when we deliberately clear the src
+        if (audioRef.current && audioRef.current.error && audioRef.current.error.code === 4 && !audioRef.current.src) {
+            console.log('PlayerControls - Ignoring empty src error (deliberate clear)');
+            return;
+        }
+        
         console.error('PlayerControls - Audio error occurred', audioRef.current.error);
         if (isPlaying) {
             onPlayPause(); // Toggle back to paused state
         }
     };
-
-    // Show friendly message if episode is being personalized (regenerating audio)
-    const isPersonalizing = currentEpisode && currentEpisode.hadAudio && !currentEpisode.audioUrl && (currentEpisode.status === 'processing' || currentEpisode.status === 'generating');
 
     return (
         <Paper
@@ -303,67 +286,50 @@ const PlayerControls = ({
                     </Box>
                 </Box>
 
-                {/* Player Controls or Personalizing Message */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '50%', justifyContent: 'center' }}>
-                    {isPersonalizing ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                            <Stack direction="row" spacing={2} alignItems="center">
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: 8, animation: 'spin 1s linear infinite' }}>
-                                        <circle cx="12" cy="12" r="10" stroke="#7855c0" strokeWidth="4" strokeDasharray="60" strokeDashoffset="40" />
-                                    </svg>
-                                    <Typography variant="body2" sx={{ color: '#7855c0', fontWeight: 600 }}>
-                                        Making it personalized for you...
-                                    </Typography>
-                                </Box>
-                            </Stack>
-                        </Box>
-                    ) : (
-                        <>
-                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                                <IconButton onClick={onPrevious} disabled={currentEpisodeIndex === 0}>
-                                    <SkipPreviousIcon />
-                                </IconButton>
+                {/* Player Controls */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '50%' }}>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                        <IconButton onClick={onPrevious} disabled={currentEpisodeIndex === 0}>
+                            <SkipPreviousIcon />
+                        </IconButton>
 
-                                <IconButton
-                                    onClick={onPlayPause}
-                                    className="play-pause-button"
-                                    sx={{
-                                        width: 48,
-                                        height: 48,
-                                        mx: 1
-                                    }}
-                                >
-                                    {isPlaying ? <PauseIcon sx={{ fontSize: '1.5rem' }} /> : <PlayArrowIcon sx={{ fontSize: '1.5rem' }} />}
-                                </IconButton>
+                        <IconButton
+                            onClick={onPlayPause}
+                            className="play-pause-button"
+                            sx={{
+                                width: 48,
+                                height: 48,
+                                mx: 1
+                            }}
+                        >
+                            {isPlaying ? <PauseIcon sx={{ fontSize: '1.5rem' }} /> : <PlayArrowIcon sx={{ fontSize: '1.5rem' }} />}
+                        </IconButton>
 
-                                <IconButton
-                                    onClick={onNext}
-                                    disabled={currentEpisodeIndex === episodes.length - 1}
-                                >
-                                    <SkipNextIcon />
-                                </IconButton>
-                            </Stack>
+                        <IconButton
+                            onClick={onNext}
+                            disabled={currentEpisodeIndex === episodes.length - 1}
+                        >
+                            <SkipNextIcon />
+                        </IconButton>
+                    </Stack>
 
-                            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                                <Typography variant="body2" className="time-display">
-                                    {formatTime(currentTime)}
-                                </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                        <Typography variant="body2" className="time-display">
+                            {formatTime(currentTime)}
+                        </Typography>
 
-                                <Slider
-                                    size="small"
-                                    value={currentTime}
-                                    max={duration || 100}
-                                    onChange={handleTimeChange}
-                                    sx={{ mx: 2, flex: 1 }}
-                                />
+                        <Slider
+                            size="small"
+                            value={currentTime}
+                            max={duration || 100}
+                            onChange={handleTimeChange}
+                            sx={{ mx: 2, flex: 1 }}
+                        />
 
-                                <Typography variant="body2" className="time-display">
-                                    {formatTime(duration)}
-                                </Typography>
-                            </Box>
-                        </>
-                    )}
+                        <Typography variant="body2" className="time-display">
+                            {formatTime(duration)}
+                        </Typography>
+                    </Box>
                 </Box>
 
                 {/* Volume Control */}

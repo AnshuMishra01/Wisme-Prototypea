@@ -63,7 +63,7 @@ const Journeys = () => {
     return (
         <div className="page" style={{ backgroundColor: wizzyColors.background }}>
             <Header />
-            
+
             {/* Enhanced Header Section */}
             <Box sx={{
                 textAlign: 'center',

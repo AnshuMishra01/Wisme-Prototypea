@@ -34,6 +34,7 @@ const EpisodeCard = ({
     onPlay,
     isReady = true,
     isRegeneratingAudio = false,
+    onRegenerate,
     wizzyColors = {
         primary: '#7855c0', // Purple
         secondary: '#FFB74D', // Orange
@@ -437,18 +438,21 @@ const EpisodeCard = ({
     // Function to render different UI based on episode status
     const renderEpisodeActions = () => {
         if (isRegeneratingAudio) {
-
             return (
                 <>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <CircularProgress
                             size={24}
-                            sx={{ color: wizzyColors.primary, mr: 1 }}
+                            sx={{
+                                color: wizzyColors.primary,
+                                mr: 1
+                            }}
                         />
                         <Typography variant="body2" sx={{ color: wizzyColors.text }}>
-                            Making it personalized for you...
+                            🎧 Wizzy is personalizing your audio...
                         </Typography>
                     </Box>
+
                     <IconButton disabled>
                         <ExpandMoreIcon />
                     </IconButton>
@@ -466,7 +470,7 @@ const EpisodeCard = ({
                             }}
                         />
                         <Typography variant="body2" sx={{ color: wizzyColors.text }}>
-                            {episodeStatus === 'generating' ? 'Generating episode...' : 'Processing audio...'}
+                            {episodeStatus === 'generating' ? '✨ Wizzy is crafting your episode...' : '🎵 Creating your personalized audio...'}
                         </Typography>
                     </Box>
 
@@ -481,7 +485,7 @@ const EpisodeCard = ({
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <ErrorOutlineIcon color="error" sx={{ mr: 1 }} />
                         <Typography variant="body2" color="error">
-                            Generation failed
+                            Oops! Let's try that again
                         </Typography>
                     </Box>
 
@@ -492,21 +496,43 @@ const EpisodeCard = ({
             );
         } else {
             // Ready state
+            const hasAudioUrl = !!episode.audioUrl;
+            
             return (
                 <>
-                    <IconButton
-                        onClick={() => onPlay(index)}
-                        sx={{
-                            backgroundColor: isCurrentlyPlaying ? wizzyColors.primary : `${wizzyColors.primary}20`,
-                            color: isCurrentlyPlaying ? 'white' : wizzyColors.primary,
-                            visibility: isCurrentlyPlaying ? 0 : 1,
-                            '&:hover': {
-                                backgroundColor: isCurrentlyPlaying ? `${wizzyColors.primary}DD` : `${wizzyColors.primary}30`,
-                            }
-                        }}
-                    >
-                        <PlayArrowIcon />
-                    </IconButton>
+                    {hasAudioUrl ? (
+                        <IconButton
+                            onClick={() => onPlay(index)}
+                            sx={{
+                                backgroundColor: isCurrentlyPlaying ? wizzyColors.primary : `${wizzyColors.primary}20`,
+                                color: isCurrentlyPlaying ? 'white' : wizzyColors.primary,
+                                visibility: isCurrentlyPlaying ? 0 : 1,
+                                '&:hover': {
+                                    backgroundColor: isCurrentlyPlaying ? `${wizzyColors.primary}DD` : `${wizzyColors.primary}30`,
+                                }
+                            }}
+                        >
+                            <PlayArrowIcon />
+                        </IconButton>
+                    ) : (
+                        <Button
+                            onClick={onRegenerate}
+                            variant="outlined"
+                            size="small"
+                            startIcon={<AutorenewIcon />}
+                            disabled={isRegeneratingAudio}
+                            sx={{
+                                color: wizzyColors.secondary,
+                                borderColor: wizzyColors.secondary,
+                                '&:hover': {
+                                    backgroundColor: `${wizzyColors.secondary}20`,
+                                    borderColor: wizzyColors.secondary,
+                                }
+                            }}
+                        >
+                            {isRegeneratingAudio ? '🎧 Personalizing...' : '✨ Make it Mine'}
+                        </Button>
+                    )}
 
                     <IconButton onClick={handleExpandClick} sx={{ color: wizzyColors.text }}>
                         {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -577,7 +603,7 @@ const EpisodeCard = ({
                     >
                         <Chip
                             icon={<AutorenewIcon className="rotating-icon" />}
-                            label="Regenerating Audio"
+                            label="🎧 Personalizing"
                             size="small"
                             sx={{
                                 backgroundColor: 'rgba(255, 255, 255, 0.9)',

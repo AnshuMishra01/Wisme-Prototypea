@@ -9,7 +9,7 @@ export const generatePodcastContent = async (topic, experienceLevel, focus, epis
         console.log(`Generating podcast content for topic: ${topic}, episodes: ${episodeCount}`);
 
         // Convert minutes to approximate character count (around 140 characters per minute)
-        const characterCount = Math.round(episodeLength * 150);
+        const characterCount = Math.round(episodeLength * 170);
 
         const response = await axios.post(
             `${API_URL}?key=${API_KEY}`,

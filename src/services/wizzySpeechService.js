@@ -86,8 +86,8 @@ class WizzySpeechService {
                 {
                     input: { text },
                     voice: {
-                        languageCode: "it-IT",
-                        name: 'it-IT-Chirp3-HD-Achernar'
+                        languageCode: 'en-US',
+                        name: 'en-US-Chirp3-HD-Puck'
                     },
                     audioConfig: {
                         audioEncoding: 'LINEAR16',

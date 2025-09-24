@@ -516,7 +516,7 @@ const Home = () => {
                         }}
                     >
                         <img
-                            src={currentStep === questionSequence.length - 1 
+                            src={currentStep === questionSequence.length - 1
                                 ? `${process.env.PUBLIC_URL}/images/wizzy-laugh.png`
                                 : `${process.env.PUBLIC_URL}/images/wizzy.png`}
                             alt="Wizzy - Your Study Buddy"

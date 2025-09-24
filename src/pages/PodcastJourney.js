@@ -8,14 +8,13 @@ import {
     Grid,
     CircularProgress,
     Alert,
-    Snackbar,
     Paper
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { podcastStorage } from '../utils/helpers';
 import EpisodeCard from '../components/EpisodeCard';
 import PlayerControls from '../components/PlayerControls';
-import { generatePodcast } from '../services/podcastGenerationService'; // Import generatePodcast function
+import { generatePodcast } from '../services/podcastGenerationService';
 
 const PodcastJourney = () => {
     const { journeyId } = useParams();
@@ -26,11 +25,10 @@ const PodcastJourney = () => {
     const [error, setError] = useState(null);
     const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [showFixMessage, setShowFixMessage] = useState(false);
     const [regeneratingAudio, setRegeneratingAudio] = useState(false);
     const [currentRegeneratingIndex, setCurrentRegeneratingIndex] = useState(null);
 
-    // Load journey and set up polling for updates
+    // Load journey (scripts should already be generated from Loading screen)
     useEffect(() => {
         const loadJourney = async () => {
             try {
@@ -43,31 +41,14 @@ const PodcastJourney = () => {
                 }
 
                 // DEBUG: Check episode status and audio availability
-                if (loadedJourney.episodes) {
-                    console.log('PodcastJourney - Episodes from localStorage:',
-                        loadedJourney.episodes.map(ep => ({
-                            title: ep.title,
-                            status: ep.status,
-                            hadAudio: ep.hadAudio,
-                            hasAudioUrl: !!ep.audioUrl
-                        }))
-                    );
-                }
-
-                // Simplify: Mark all episodes with 'ready' status as having audio
-                if (loadedJourney.episodes) {
-                    loadedJourney.episodes = loadedJourney.episodes.map(episode => {
-                        return {
-                            ...episode,
-                            // If status is ready, always set hadAudio to true
-                            hadAudio: episode.status === 'ready' ? true : episode.hadAudio
-                        };
-                    });
-
-                    // Save updated journey with fixed flags
-                    podcastStorage.updateJourney(loadedJourney);
-                    console.log("Updated all ready episodes with hadAudio = true");
-                }
+                console.log('PodcastJourney - Episodes from localStorage:',
+                    loadedJourney.episodes.map(ep => ({
+                        title: ep.title,
+                        status: ep.status,
+                        hadAudio: ep.hadAudio,
+                        hasAudioUrl: !!ep.audioUrl
+                    }))
+                );
 
                 setJourney(loadedJourney);
             } catch (err) {
@@ -79,96 +60,24 @@ const PodcastJourney = () => {
         };
 
         loadJourney();
+    }, [journeyId]);
 
-        // Set up polling to check for episode updates every 5 seconds (less aggressive)
-        const pollInterval = setInterval(() => {
-            // Only poll if we're not currently regenerating audio to avoid conflicts
-            if (!regeneratingAudio) {
-                const updatedJourney = podcastStorage.getJourneyById(journeyId);
-                if (updatedJourney) {
-                    // Check if any episodes have changed status
-                    setJourney(prevJourney => {
-                        if (!prevJourney) return updatedJourney;
+    // Removed auto-fix logic to keep things simple
 
-                        // Only update if there are meaningful status changes (not audio URL changes during regeneration)
-                        const hasStatusChanges = updatedJourney.episodes.some((updatedEp, index) => {
-                            const prevEp = prevJourney.episodes[index];
-                            return prevEp && prevEp.status !== updatedEp.status;
-                        });
-
-                        if (hasStatusChanges) {
-                            console.log('PodcastJourney - Episode status updates detected, refreshing state');
-                            return updatedJourney;
-                        }
-
-                        return prevJourney;
-                    });
-                }
-            }
-        }, 5000); // Poll every 5 seconds
-
-        // Cleanup polling on unmount
-        return () => {
-            clearInterval(pollInterval);
-        };
-    }, [journeyId, regeneratingAudio]);
-
-    // More aggressive fix for hadAudio flag
-    const forceUpdateAudioFlags = useCallback(() => {
-        if (!journey) return;
-
-        console.log("Force updating audio flags for all episodes");
-
-        // Force all episodes with status "ready" to have hadAudio = true
-        const updatedEpisodes = journey.episodes.map(episode => ({
-            ...episode,
-            hadAudio: episode.status === 'ready' ? true : episode.hadAudio
-        }));
-
-        const updatedJourney = {
-            ...journey,
-            episodes: updatedEpisodes
-        };
-
-        // Update journey in state and localStorage
-        setJourney(updatedJourney);
-        podcastStorage.updateJourney(updatedJourney);
-
-        // Show confirmation message
-        setShowFixMessage(true);
-        console.log("Force update complete - all episodes now have hadAudio = true");
-    }, [journey]);
-
-    // Auto-fix on load if we detect inconsistencies (run only once)
-    useEffect(() => {
-        if (!journey) return;
-
-        // Check if any episodes need fixing
-        const needsFixing = journey.episodes.some(ep =>
-            (ep.status === 'ready' && !ep.hadAudio)
-        );
-
-        if (needsFixing) {
-            console.log("Detected inconsistencies in audio flags, auto-fixing...");
-            forceUpdateAudioFlags();
-        }
-    }, []); // Empty dependency array to run only once
-
-    // Get episodes that can be played (status is 'ready')
+    // Get episodes that can be played (have audioUrl)
     const getPlayableEpisodes = useCallback(() => {
         if (!journey) return [];
 
-        // Simply return all ready episodes - we trust the ready status
-        const readyEpisodes = journey.episodes.filter(ep => ep.status === 'ready');
+        // Only return episodes that actually have audioUrl (can be played immediately)
+        const episodesWithAudio = journey.episodes.filter(ep => ep.status === 'ready' && ep.audioUrl);
 
-        console.log('PodcastJourney - Playable episodes:', readyEpisodes.map(ep => ({
+        console.log('PodcastJourney - Episodes with audio URLs:', episodesWithAudio.map(ep => ({
             title: ep.title,
             hasAudioUrl: !!ep.audioUrl,
-            hadAudio: ep.hadAudio,
             status: ep.status
         })));
 
-        return readyEpisodes;
+        return episodesWithAudio;
     }, [journey]);
 
     // Simple play/pause handler
@@ -222,6 +131,19 @@ const PodcastJourney = () => {
         navigate('/');
     };
 
+    // Manual regeneration trigger
+    const handleManualRegeneration = async (episodeIndex) => {
+        console.log(`Manual regeneration requested for episode ${episodeIndex + 1}`);
+        
+        // Trigger regeneration
+        const success = await regenerateAudio(episodeIndex);
+        if (success) {
+            console.log('Manual regeneration successful');
+        } else {
+            console.error('Manual regeneration failed');
+        }
+    };
+
     // Wizzy's colors for theming
     const wizzyColors = {
         primary: '#7855c0', // Purple
@@ -257,12 +179,27 @@ const PodcastJourney = () => {
             setCurrentRegeneratingIndex(episodeIndex);
             setRegeneratingAudio(true);
 
+            // Update episode status to 'processing' to prevent UI flickering
+            const processingEpisodes = [...journey.episodes];
+            processingEpisodes[episodeIndex] = {
+                ...processingEpisodes[episodeIndex],
+                status: 'processing'
+            };
+            
+            const processingJourney = {
+                ...journey,
+                episodes: processingEpisodes
+            };
+            
+            // Update state immediately to show processing status
+            setJourney(processingJourney);
+
             // Generate audio for this episode using the podcastGenerationService
             const episodeWithAudio = await generatePodcast(episode);
 
             // Update this episode in our journey state
             if (episodeWithAudio && episodeWithAudio.audioUrl) {
-                const updatedEpisodes = [...journey.episodes];
+                const updatedEpisodes = [...processingJourney.episodes];
                 updatedEpisodes[episodeIndex] = {
                     ...updatedEpisodes[episodeIndex],
                     audioUrl: episodeWithAudio.audioUrl,
@@ -271,20 +208,56 @@ const PodcastJourney = () => {
                 };
 
                 const updatedJourney = {
-                    ...journey,
+                    ...processingJourney,
                     episodes: updatedEpisodes
                 };
 
-                // Update state (but not localStorage - we don't save audio there)
+                // Update state immediately to prevent recursive regeneration
+                console.log(`Successfully regenerated audio for episode ${episodeIndex + 1} - updating state`);
                 setJourney(updatedJourney);
-                console.log(`Successfully regenerated audio for episode ${episodeIndex + 1}`);
+                
+                // Also save to localStorage immediately to prevent loss during polling
+                try {
+                    podcastStorage.saveJourney(updatedJourney);
+                    console.log(`Audio URL saved to localStorage for episode ${episodeIndex + 1}`);
+                } catch (error) {
+                    console.warn('Failed to save audioUrl to localStorage:', error);
+                }
+                
+                console.log(`Audio URL now available for episode ${episodeIndex + 1}:`, !!updatedJourney.episodes[episodeIndex].audioUrl);
                 return true;
             } else {
                 console.error('Failed to generate audio - no audio URL returned');
+                
+                // Revert episode status to failed
+                const failedEpisodes = [...processingJourney.episodes];
+                failedEpisodes[episodeIndex] = {
+                    ...failedEpisodes[episodeIndex],
+                    status: 'failed'
+                };
+                
+                setJourney({
+                    ...processingJourney,
+                    episodes: failedEpisodes
+                });
+                
                 return false;
             }
         } catch (error) {
             console.error(`Error regenerating audio for episode ${episodeIndex + 1}:`, error);
+            
+            // Revert episode status to failed
+            const failedEpisodes = [...journey.episodes];
+            failedEpisodes[episodeIndex] = {
+                ...failedEpisodes[episodeIndex],
+                status: 'failed'
+            };
+            
+            setJourney({
+                ...journey,
+                episodes: failedEpisodes
+            });
+            
             return false;
         } finally {
             setRegeneratingAudio(false);
@@ -292,53 +265,17 @@ const PodcastJourney = () => {
         }
     }, [journey]);
 
-    // Track which episodes have attempted regeneration to prevent loops
-    const [regenerationAttempts, setRegenerationAttempts] = useState(new Set());
-
-    // Auto-regenerate audio when needed for the current episode
-    useEffect(() => {
-        const episodes = getPlayableEpisodes();
-
-        if (episodes.length > 0 && currentEpisodeIndex >= 0 && currentEpisodeIndex < episodes.length) {
-            const currentEp = episodes[currentEpisodeIndex];
-
-            // Check if audio needs regeneration (marked as having audio but URL is missing)
-            if (currentEp && currentEp.hadAudio === true && !currentEp.audioUrl && !regeneratingAudio) {
-                // Find the index in the original journey array
-                const originalIndex = journey.episodes.findIndex(
-                    ep => ep.title === currentEp.title && ep.description === currentEp.description
-                );
-
-                // Create a unique key for this episode to track regeneration attempts
-                const episodeKey = `${originalIndex}-${currentEp.title}`;
-
-                // Only regenerate if we haven't already attempted it
-                if (originalIndex !== -1 && !regenerationAttempts.has(episodeKey)) {
-                    console.log(`Current episode (${currentEp.title}) needs audio regeneration - attempting once`);
-
-                    // Mark this episode as having attempted regeneration
-                    setRegenerationAttempts(prev => new Set(prev).add(episodeKey));
-
-                    regenerateAudio(originalIndex).then(success => {
-                        if (success && isPlaying) {
-                            // If we were trying to play, retry playing after regeneration
-                            console.log('Auto-playing after audio regeneration');
-                            setIsPlaying(false);
-                            setTimeout(() => setIsPlaying(true), 500);
-                        }
-                    });
-                } else if (regenerationAttempts.has(episodeKey)) {
-                    console.log(`Skipping regeneration for episode (${currentEp.title}) - already attempted`);
-                }
-            }
-        }
-    }, [journey, currentEpisodeIndex, getPlayableEpisodes, regeneratingAudio, isPlaying, regenerateAudio, regenerationAttempts]);
+    // Simplified: No auto-regeneration for now
+    // Episodes that don't have audioUrl will show "Generate Audio" button instead
 
     if (isLoading) {
         return (
             <Container sx={{ backgroundColor: wizzyColors.background, minHeight: '100vh' }}>
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                    <CircularProgress sx={{ color: wizzyColors.primary }} />
+                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                    <CircularProgress sx={{ color: wizzyColors.primary, mb: 2 }} />
+                    <Typography variant="h6" sx={{ color: wizzyColors.text, textAlign: 'center' }}>
+                        🎧 Preparing your personalized learning journey...
+                    </Typography>
                 </Box>
             </Container>
         );
@@ -367,7 +304,7 @@ const PodcastJourney = () => {
                         sx={{ backgroundColor: wizzyColors.primary, '&:hover': { backgroundColor: '#644da8' } }}
                         onClick={() => navigate('/create')}
                     >
-                        Create New Journey
+                        ✨ Start Fresh Learning Journey
                     </Button>
                 </Box>
             </Container>
@@ -487,7 +424,7 @@ const PodcastJourney = () => {
                 />
 
                 {/* Additional Background Icons for more density */}
-                
+
                 {/* Top Center Wizzy */}
                 <img
                     src={`${process.env.PUBLIC_URL}/images/wizzy.png`}
@@ -795,22 +732,32 @@ const PodcastJourney = () => {
                 </Paper>
 
                 <Grid container spacing={3}>
-                    {journey.episodes.map((episode, index) => (
-                        <Grid item xs={12} key={index}>
-                            <EpisodeCard
-                                episode={episode}
-                                index={index}
-                                isPlaying={isPlaying && index === currentEpisodeIndex}
-                                onPlay={() => {
-                                    setCurrentEpisodeIndex(index);
-                                    setIsPlaying(true);
-                                }}
-                                isReady={episode.status === 'ready'}
-                                isRegeneratingAudio={regeneratingAudio && currentRegeneratingIndex === index}
-                                wizzyColors={wizzyColors}
-                            />
-                        </Grid>
-                    ))}
+                    {journey.episodes.map((episode, index) => {
+                        // Find the index in playable episodes (episodes with audioUrl)
+                        const playableIndex = getPlayableEpisodes().findIndex(
+                            ep => ep.title === episode.title && ep.description === episode.description
+                        );
+                        
+                        return (
+                            <Grid item xs={12} key={index}>
+                                <EpisodeCard
+                                    episode={episode}
+                                    index={index}
+                                    isPlaying={isPlaying && playableIndex === currentEpisodeIndex && playableIndex !== -1}
+                                    onPlay={() => {
+                                        if (playableIndex !== -1) {
+                                            setCurrentEpisodeIndex(playableIndex);
+                                            setIsPlaying(true);
+                                        }
+                                    }}
+                                    isReady={episode.status === 'ready'}
+                                    isRegeneratingAudio={regeneratingAudio && currentRegeneratingIndex === index}
+                                    onRegenerate={() => handleManualRegeneration(index)}
+                                    wizzyColors={wizzyColors}
+                                />
+                            </Grid>
+                        );
+                    })}
                 </Grid>
             </Container>
 
@@ -827,13 +774,7 @@ const PodcastJourney = () => {
                 />
             )}
 
-            {/* Fix Audio flag notification */}
-            <Snackbar
-                open={showFixMessage}
-                autoHideDuration={3000}
-                onClose={() => setShowFixMessage(false)}
-                message="Audio status fixed for all episodes"
-            />
+
         </Box>
     );
 };
