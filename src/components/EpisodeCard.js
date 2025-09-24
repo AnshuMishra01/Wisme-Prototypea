@@ -437,21 +437,18 @@ const EpisodeCard = ({
     // Function to render different UI based on episode status
     const renderEpisodeActions = () => {
         if (isRegeneratingAudio) {
+
             return (
                 <>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <CircularProgress
                             size={24}
-                            sx={{
-                                color: wizzyColors.primary,
-                                mr: 1
-                            }}
+                            sx={{ color: wizzyColors.primary, mr: 1 }}
                         />
                         <Typography variant="body2" sx={{ color: wizzyColors.text }}>
-                            Regenerating audio...
+                            Making it personalized for you...
                         </Typography>
                     </Box>
-
                     <IconButton disabled>
                         <ExpandMoreIcon />
                     </IconButton>

@@ -240,6 +240,9 @@ const PlayerControls = ({
         }
     };
 
+    // Show friendly message if episode is being personalized (regenerating audio)
+    const isPersonalizing = currentEpisode && currentEpisode.hadAudio && !currentEpisode.audioUrl && (currentEpisode.status === 'processing' || currentEpisode.status === 'generating');
+
     return (
         <Paper
             elevation={3}
@@ -300,50 +303,67 @@ const PlayerControls = ({
                     </Box>
                 </Box>
 
-                {/* Player Controls */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '50%' }}>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                        <IconButton onClick={onPrevious} disabled={currentEpisodeIndex === 0}>
-                            <SkipPreviousIcon />
-                        </IconButton>
+                {/* Player Controls or Personalizing Message */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '50%', justifyContent: 'center' }}>
+                    {isPersonalizing ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                            <Stack direction="row" spacing={2} alignItems="center">
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: 8, animation: 'spin 1s linear infinite' }}>
+                                        <circle cx="12" cy="12" r="10" stroke="#7855c0" strokeWidth="4" strokeDasharray="60" strokeDashoffset="40" />
+                                    </svg>
+                                    <Typography variant="body2" sx={{ color: '#7855c0', fontWeight: 600 }}>
+                                        Making it personalized for you...
+                                    </Typography>
+                                </Box>
+                            </Stack>
+                        </Box>
+                    ) : (
+                        <>
+                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                                <IconButton onClick={onPrevious} disabled={currentEpisodeIndex === 0}>
+                                    <SkipPreviousIcon />
+                                </IconButton>
 
-                        <IconButton
-                            onClick={onPlayPause}
-                            className="play-pause-button"
-                            sx={{
-                                width: 48,
-                                height: 48,
-                                mx: 1
-                            }}
-                        >
-                            {isPlaying ? <PauseIcon sx={{ fontSize: '1.5rem' }} /> : <PlayArrowIcon sx={{ fontSize: '1.5rem' }} />}
-                        </IconButton>
+                                <IconButton
+                                    onClick={onPlayPause}
+                                    className="play-pause-button"
+                                    sx={{
+                                        width: 48,
+                                        height: 48,
+                                        mx: 1
+                                    }}
+                                >
+                                    {isPlaying ? <PauseIcon sx={{ fontSize: '1.5rem' }} /> : <PlayArrowIcon sx={{ fontSize: '1.5rem' }} />}
+                                </IconButton>
 
-                        <IconButton
-                            onClick={onNext}
-                            disabled={currentEpisodeIndex === episodes.length - 1}
-                        >
-                            <SkipNextIcon />
-                        </IconButton>
-                    </Stack>
+                                <IconButton
+                                    onClick={onNext}
+                                    disabled={currentEpisodeIndex === episodes.length - 1}
+                                >
+                                    <SkipNextIcon />
+                                </IconButton>
+                            </Stack>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                        <Typography variant="body2" className="time-display">
-                            {formatTime(currentTime)}
-                        </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                                <Typography variant="body2" className="time-display">
+                                    {formatTime(currentTime)}
+                                </Typography>
 
-                        <Slider
-                            size="small"
-                            value={currentTime}
-                            max={duration || 100}
-                            onChange={handleTimeChange}
-                            sx={{ mx: 2, flex: 1 }}
-                        />
+                                <Slider
+                                    size="small"
+                                    value={currentTime}
+                                    max={duration || 100}
+                                    onChange={handleTimeChange}
+                                    sx={{ mx: 2, flex: 1 }}
+                                />
 
-                        <Typography variant="body2" className="time-display">
-                            {formatTime(duration)}
-                        </Typography>
-                    </Box>
+                                <Typography variant="body2" className="time-display">
+                                    {formatTime(duration)}
+                                </Typography>
+                            </Box>
+                        </>
+                    )}
                 </Box>
 
                 {/* Volume Control */}
