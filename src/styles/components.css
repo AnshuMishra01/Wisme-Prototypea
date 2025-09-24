@@ -1,0 +1,720 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.header {
+    background-color: #282c34;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.footer {
+    background-color: #282c34;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* LoadingScreen component styles */
+.loading-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+}
+
+.loading-screen-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.loading-screen .alien {
+    font-size: 50px;
+}
+
+.alien-emoji {
+    font-size: 5rem;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse-animation {
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* Wizzy Floating Animations */
+@keyframes float {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    25% {
+        transform: translateY(-10px) rotate(2deg);
+    }
+
+    50% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    75% {
+        transform: translateY(-5px) rotate(-2deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+}
+
+/* Wizzy Reaction Animations */
+@keyframes excited {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    25% {
+        transform: translateY(-15px) rotate(5deg);
+    }
+
+    50% {
+        transform: translateY(-10px) rotate(-5deg);
+    }
+
+    75% {
+        transform: translateY(-15px) rotate(5deg);
+    }
+}
+
+@keyframes thinking {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-5px) rotate(3deg);
+    }
+}
+
+@keyframes talking {
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+    }
+
+    25% {
+        transform: translateY(-3px) scale(1.02);
+    }
+
+    75% {
+        transform: translateY(-1px) scale(0.98);
+    }
+}
+
+.wizzy-character {
+    transform-origin: center bottom;
+}
+
+.wizzy-character:hover {
+    animation: excited 1s ease-in-out;
+}
+
+.wizzy-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Enhanced Cloud speech bubble styling */
+.cloud-bubble {
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    border-radius: 35px 35px 35px 8px;
+    box-shadow:
+        0 15px 35px rgba(120, 85, 192, 0.15),
+        0 5px 15px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(120, 85, 192, 0.1);
+    transform: scale(1);
+    transition: all 0.3s ease;
+    animation: cloudFloat 3s ease-in-out infinite;
+}
+
+.cloud-bubble:hover {
+    transform: scale(1.02);
+    box-shadow:
+        0 20px 40px rgba(120, 85, 192, 0.2),
+        0 8px 20px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.cloud-bubble:before {
+    content: '';
+    position: absolute;
+    right: 25%;
+    bottom: -25px;
+    width: 35px;
+    height: 35px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    border-radius: 50%;
+    border: 2px solid rgba(120, 85, 192, 0.1);
+    box-shadow: 0 8px 15px rgba(120, 85, 192, 0.15);
+    animation: cloudBubble1 3s ease-in-out infinite;
+}
+
+.cloud-bubble:after {
+    content: '';
+    position: absolute;
+    right: 12%;
+    bottom: -40px;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    border-radius: 50%;
+    border: 1.5px solid rgba(120, 85, 192, 0.1);
+    box-shadow: 0 6px 12px rgba(120, 85, 192, 0.12);
+    animation: cloudBubble2 3s ease-in-out infinite;
+}
+
+@keyframes cloudFloat {
+
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-3px) rotate(0.5deg);
+    }
+}
+
+@keyframes cloudBubble1 {
+
+    0%,
+    100% {
+        transform: translateY(0px) scale(1);
+    }
+
+    50% {
+        transform: translateY(-2px) scale(1.05);
+    }
+}
+
+@keyframes cloudBubble2 {
+
+    0%,
+    100% {
+        transform: translateY(0px) scale(1);
+    }
+
+    50% {
+        transform: translateY(-1px) scale(1.1);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+/* Text Animation - character by character typing effect */
+@keyframes typeIn {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+/* Improved individual character animation */
+@keyframes fadeInLetter {
+    0% {
+        opacity: 0;
+        transform: translateX(-15px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animated-letter {
+    display: inline-block;
+    opacity: 0;
+    animation-name: fadeInLetter;
+    animation-duration: 0.2s;
+    animation-fill-mode: forwards;
+}
+
+/* Container for the animated text */
+.typing-text-container {
+    width: 100%;
+}
+
+/* Handle whitespace properly in animation */
+.text-space {
+    display: inline-block;
+    width: 0.3em;
+}
+
+/* Pulse animation for interaction elements */
+.pulse-on-hover:hover {
+    animation: pulse 0.5s ease-in-out;
+}
+
+/* QuestionFlow component styles */
+.question-flow {
+    margin: 20px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.question-container {
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.step-button {
+    margin: 0 8px;
+}
+
+/* Enhanced animations for UI elements */
+@keyframes slideInFromLeft {
+    0% {
+        transform: translateX(-60px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInFromRight {
+    0% {
+        transform: translateX(60px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInFromBottom {
+    0% {
+        transform: translateY(40px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInScale {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes gentlePulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        box-shadow: 0 4px 15px rgba(120, 85, 192, 0.2);
+    }
+
+    50% {
+        transform: scale(1.02);
+        box-shadow: 0 6px 25px rgba(120, 85, 192, 0.3);
+    }
+}
+
+@keyframes laughBounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    
+    10% {
+        transform: translateY(-15px);
+    }
+    
+    30% {
+        transform: translateY(-10px);
+    }
+    
+    40% {
+        transform: translateY(-5px);
+    }
+    
+    60% {
+        transform: translateY(-8px);
+    }
+    
+    70% {
+        transform: translateY(-3px);
+    }
+}
+
+.slide-in-text {
+    animation: slideInFromLeft 0.6s ease-out;
+    display: inline-block;
+}
+
+/* Enhanced input field styling */
+.enhanced-input {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 255, 0.95) 100%);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 8px 25px rgba(120, 85, 192, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.enhanced-input:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 35px rgba(120, 85, 192, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.enhanced-input:focus-within {
+    transform: translateY(-2px);
+    box-shadow:
+        0 15px 40px rgba(120, 85, 192, 0.2),
+        0 0 0 3px rgba(120, 85, 192, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Enhanced button styling */
+.enhanced-button {
+    background: linear-gradient(135deg, #7855c0 0%, #6344a3 100%);
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    box-shadow:
+        0 8px 25px rgba(120, 85, 192, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.enhanced-button:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.enhanced-button:hover:before {
+    left: 100%;
+}
+
+.enhanced-button:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 12px 35px rgba(120, 85, 192, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.enhanced-button:active {
+    transform: translateY(-1px);
+}
+
+/* Text revealing animation - character by character */
+.revealing-text {
+    overflow: hidden;
+    white-space: nowrap;
+    display: block;
+    animation: reveal 1s steps(40, end);
+}
+
+@keyframes reveal {
+    from {
+        width: 0
+    }
+
+    to {
+        width: 100%
+    }
+}
+
+/* EpisodeCard component styles */
+.episode-card {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.episode-card:hover {
+    transform: translateY(-5px);
+}
+
+.episode-header {
+    padding: 16px;
+    color: white;
+    font-weight: bold;
+}
+
+.play-button {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Enhanced PlayerControls component styles */
+.player-controls {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    align-items: center;
+}
+
+.player-controls button {
+    margin: 0 10px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+.player-controls button:hover {
+    background-color: #0056b3;
+}
+
+/* Enhanced Audio Player Bar Styling - Dark Theme */
+.player-bar {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    border-top: 2px solid rgba(120, 85, 192, 0.3);
+    padding: 16px;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    color: #ffffff !important;
+}
+
+/* Force ALL text in player bar to be white */
+.player-bar *,
+.player-bar .MuiTypography-root,
+.player-bar .MuiTypography-subtitle1,
+.player-bar .MuiTypography-body2,
+.player-bar .MuiTypography-h6,
+.player-bar .MuiTypography-caption,
+.player-bar span,
+.player-bar p,
+.player-bar div {
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+.player-bar .MuiTypography-subtitle1 {
+    font-weight: 700 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.player-bar .MuiTypography-body2 {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500 !important;
+}
+
+/* Episode Info Section - Force White Text */
+.player-bar .episode-info,
+.player-bar .episode-info * {
+    color: #ffffff !important;
+}
+
+.player-bar .episode-title {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.player-bar .episode-subtitle {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+}
+
+/* Time Display Styling - Force White Text */
+.player-bar .time-display {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    min-width: 45px;
+    text-align: center;
+}
+
+/* Enhanced Player Control Buttons - Force White Icons */
+.player-bar .MuiIconButton-root,
+.player-bar .MuiIconButton-root .MuiSvgIcon-root {
+    color: #ffffff !important;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+}
+
+.player-bar .MuiIconButton-root:hover {
+    background-color: rgba(120, 85, 192, 0.3) !important;
+    color: #ffffff !important;
+    transform: scale(1.1);
+}
+
+.player-bar .MuiIconButton-root:hover .MuiSvgIcon-root {
+    color: #ffffff !important;
+}
+
+/* Play/Pause Button Special Styling */
+.player-bar .play-pause-button {
+    background: linear-gradient(135deg, #7855c0 0%, #6344a3 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(120, 85, 192, 0.4);
+}
+
+.player-bar .play-pause-button:hover {
+    background: linear-gradient(135deg, #6344a3 0%, #5233a0 100%) !important;
+    transform: scale(1.15);
+    box-shadow: 0 6px 20px rgba(120, 85, 192, 0.5);
+}
+
+/* Episode Number Badge */
+.player-bar .episode-badge {
+    background: linear-gradient(135deg, #7855c0 0%, #6344a3 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(120, 85, 192, 0.3);
+}
+
+/* Progress Slider Styling */
+.player-bar .MuiSlider-root {
+    color: #7855c0 !important;
+}
+
+.player-bar .MuiSlider-track {
+    background: linear-gradient(90deg, #7855c0 0%, #FFB74D 100%) !important;
+    height: 4px !important;
+    border-radius: 2px;
+}
+
+.player-bar .MuiSlider-rail {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    height: 4px !important;
+    border-radius: 2px;
+}
+
+.player-bar .MuiSlider-thumb {
+    background: linear-gradient(135deg, #7855c0 0%, #FFB74D 100%) !important;
+    width: 16px !important;
+    height: 16px !important;
+    box-shadow: 0 2px 8px rgba(120, 85, 192, 0.4) !important;
+    border: 2px solid #ffffff !important;
+}
+
+.player-bar .MuiSlider-thumb:hover,
+.player-bar .MuiSlider-thumb.Mui-focusVisible {
+    box-shadow: 0 0 0 8px rgba(120, 85, 192, 0.2) !important;
+}
+
+/* Volume Control Styling */
+.volume-control {
+    width: 100px;
+}
+
+.player-bar .volume-slider {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.player-bar .volume-slider .MuiSlider-track {
+    background: rgba(255, 255, 255, 0.7) !important;
+}
+
+.player-bar .volume-slider .MuiSlider-thumb {
+    background: #ffffff !important;
+    width: 12px !important;
+    height: 12px !important;
+    border: 1px solid rgba(120, 85, 192, 0.5) !important;
+}
+
+/* Responsive Design for Audio Player */
+@media (max-width: 768px) {
+    .player-bar {
+        padding: 12px;
+    }
+
+    .player-bar .episode-title {
+        font-size: 0.875rem !important;
+    }
+
+    .player-bar .time-display {
+        font-size: 0.75rem !important;
+        min-width: 35px;
+    }
+
+    .volume-control {
+        width: 60px;
+    }
+}
