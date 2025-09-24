@@ -4,11 +4,16 @@
   "description": "Podcast journey creation app",
   "main": "index.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+     "start": "npx serve -s build",
+     "build": "react-scripts build",
+     "test": "react-scripts test",
+     "eject": "react-scripts eject",
+     "serve": "npx serve -s build"
   },
+    "engines": {
+      "node": ">=14"
+    },
+    "port": "process.env.PORT || 3000",
   "keywords": [],
   "author": "",
   "license": "ISC",
