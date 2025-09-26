@@ -385,7 +385,7 @@ const Home = () => {
                     textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                     animation: 'fadeInScale 1s ease-out'
                 }}>
-                    Knowledge Sounds Good This Way
+                    Knowledge Sounds Better This Way
                 </Typography>
             </Box>
             <Container maxWidth="xl" sx={{
