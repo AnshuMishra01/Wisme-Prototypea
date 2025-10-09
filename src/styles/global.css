@@ -23,6 +23,9 @@ body {
     background-color: var(--wizzy-background);
     color: var(--wizzy-text-primary);
     line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 /* Layout */
@@ -34,7 +37,6 @@ body {
 
 .page {
     min-height: 100vh;
-    padding: 24px 0;
     display: flex;
     flex-direction: column;
 }

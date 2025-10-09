@@ -7,23 +7,22 @@ import {
     Stepper,
     Step,
     StepLabel,
-    FormControl,
-    RadioGroup,
-    FormControlLabel,
-    Radio,
     Slider,
     FormLabel,
-    Paper
+    Paper,
+    Chip,
+    Stack
 } from '@mui/material';
 
-const experienceLevels = ['beginner', 'intermediate', 'advanced'];
-const focusOptions = ['theory and concepts', 'practical examples', 'balanced approach'];
+// Updated to use input fields with suggestion chips instead of radio buttons
+const experienceLevelSuggestions = ['Total beginner', 'Some knowledge', 'Intermediate', 'Pretty advanced'];
+const focusSuggestions = ['Theory and concepts', 'Practical examples', 'Balanced approach', 'Case studies', 'Hands-on tutorials'];
 
 const QuestionFlow = ({ onSubmit }) => {
     const [activeStep, setActiveStep] = useState(0);
     const [topic, setTopic] = useState('');
-    const [experienceLevel, setExperienceLevel] = useState('beginner');
-    const [focus, setFocus] = useState('balanced approach');
+    const [experienceLevel, setExperienceLevel] = useState('');
+    const [focus, setFocus] = useState('');
     const [episodeLength, setEpisodeLength] = useState(10);
     const [episodeCount, setEpisodeCount] = useState(3);
 
@@ -52,7 +51,9 @@ const QuestionFlow = ({ onSubmit }) => {
             case 0:
                 return topic.trim().length >= 3;
             case 1:
+                return experienceLevel.trim().length >= 2;
             case 2:
+                return focus.trim().length >= 2;
             case 3:
                 return true;
             default:
@@ -83,60 +84,86 @@ const QuestionFlow = ({ onSubmit }) => {
                 return (
                     <Box sx={{ py: 3 }}>
                         <Typography variant="h6" gutterBottom>
-                            What's your experience level with this topic?
+                            Great topic! How would you rate your knowledge level on this subject?
                         </Typography>
-                        <FormControl component="fieldset" sx={{ mt: 2 }}>
-                            <RadioGroup
-                                value={experienceLevel}
-                                onChange={(e) => setExperienceLevel(e.target.value)}
-                            >
-                                <FormControlLabel
-                                    value="beginner"
-                                    control={<Radio />}
-                                    label="Beginner - I'm new to this topic"
-                                />
-                                <FormControlLabel
-                                    value="intermediate"
-                                    control={<Radio />}
-                                    label="Intermediate - I have some knowledge"
-                                />
-                                <FormControlLabel
-                                    value="advanced"
-                                    control={<Radio />}
-                                    label="Advanced - I want to deepen my expertise"
-                                />
-                            </RadioGroup>
-                        </FormControl>
+                        
+                        <TextField
+                            fullWidth
+                            label="Describe your experience level"
+                            value={experienceLevel}
+                            onChange={(e) => setExperienceLevel(e.target.value)}
+                            placeholder="e.g., Total beginner, Some experience, Pretty advanced..."
+                            helperText="You can use the suggested terms below or write your own"
+                            sx={{ mt: 2 }}
+                        />
+                        
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                                Suggested terms:
+                            </Typography>
+                            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                {experienceLevelSuggestions.map((suggestion) => (
+                                    <Chip
+                                        key={suggestion}
+                                        label={suggestion}
+                                        variant={experienceLevel === suggestion ? "filled" : "outlined"}
+                                        onClick={() => setExperienceLevel(suggestion)}
+                                        sx={{
+                                            cursor: 'pointer',
+                                            mb: 1,
+                                            '&:hover': {
+                                                backgroundColor: experienceLevel === suggestion ? '#1DB954' : 'rgba(29, 185, 84, 0.1)'
+                                            },
+                                            backgroundColor: experienceLevel === suggestion ? '#1DB954' : 'transparent',
+                                            color: experienceLevel === suggestion ? 'white' : 'inherit'
+                                        }}
+                                    />
+                                ))}
+                            </Stack>
+                        </Box>
                     </Box>
                 );
             case 2:
                 return (
                     <Box sx={{ py: 3 }}>
                         <Typography variant="h6" gutterBottom>
-                            What would you like to focus on?
+                            What would you like to focus on in your learning journey?
                         </Typography>
-                        <FormControl component="fieldset" sx={{ mt: 2 }}>
-                            <RadioGroup
-                                value={focus}
-                                onChange={(e) => setFocus(e.target.value)}
-                            >
-                                <FormControlLabel
-                                    value="theory and concepts"
-                                    control={<Radio />}
-                                    label="Theory and concepts - Learn the fundamentals"
-                                />
-                                <FormControlLabel
-                                    value="practical examples"
-                                    control={<Radio />}
-                                    label="Practical examples - Focus on applications"
-                                />
-                                <FormControlLabel
-                                    value="balanced approach"
-                                    control={<Radio />}
-                                    label="Balanced approach - Mix of theory and practice"
-                                />
-                            </RadioGroup>
-                        </FormControl>
+                        
+                        <TextField
+                            fullWidth
+                            label="Describe your learning focus"
+                            value={focus}
+                            onChange={(e) => setFocus(e.target.value)}
+                            placeholder="e.g., Practical examples, Theory and concepts, Real-world applications..."
+                            helperText="You can use the suggested terms below or describe your own focus"
+                            sx={{ mt: 2 }}
+                        />
+                        
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                                Suggested focuses:
+                            </Typography>
+                            <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                {focusSuggestions.map((suggestion) => (
+                                    <Chip
+                                        key={suggestion}
+                                        label={suggestion}
+                                        variant={focus === suggestion ? "filled" : "outlined"}
+                                        onClick={() => setFocus(suggestion)}
+                                        sx={{
+                                            cursor: 'pointer',
+                                            mb: 1,
+                                            '&:hover': {
+                                                backgroundColor: focus === suggestion ? '#1DB954' : 'rgba(29, 185, 84, 0.1)'
+                                            },
+                                            backgroundColor: focus === suggestion ? '#1DB954' : 'transparent',
+                                            color: focus === suggestion ? 'white' : 'inherit'
+                                        }}
+                                    />
+                                ))}
+                            </Stack>
+                        </Box>
                     </Box>
                 );
             case 3:
@@ -283,3 +310,5 @@ const QuestionFlow = ({ onSubmit }) => {
 };
 
 export default QuestionFlow;
+
+
